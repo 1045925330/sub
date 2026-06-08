@@ -12,43 +12,37 @@
     "clash_api": {
       "external_controller": "0.0.0.0:9090",
       "external_ui": "ui",
-      "external_ui_download_detour": "Proxy",
+      "external_ui_download_detour": "🚀 节点选择",
       "external_ui_download_url": "https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip",
-      "secret": "",
-      "default_mode": "rule"
+      "secret": "**********************",
+      "default_mode": "规则"
     }
   },
   "dns": {
     "servers": [
       {
-        "tag": "Domestic",
+        "tag": "Local-DNS",
         "type": "https",
-        "server": "223.6.6.6",
-        "detour": "Domestic"
+        "server": "223.5.5.5"
       },
       {
-        "tag": "Proxy",
+        "tag": "Remote-DNS",
         "type": "https",
         "server": "1.1.1.1",
-        "detour": "Proxy"
+        "detour": "🚀 节点选择"
       },
       {
         "tag": "Local",
         "type": "local"
       },
       {
-        "tag": "remote",
+        "tag": "fakeip",
         "type": "fakeip",
         "inet4_range": "198.18.0.0/15",
         "inet6_range": "fc00::/18"
       }
     ],
     "rules": [
-      {
-        "clash_mode": "Direct",
-        "action": "route",
-        "server": "Domestic"
-      },
       {
         "domain_suffix": [
           ".lan"
@@ -57,35 +51,56 @@
         "server": "Local"
       },
       {
+        "domain_suffix": [
+          "**********************"
+        ],
+        "action": "route",
+        "server": "Local-DNS",
+        "rewrite_ttl": 0,
+        "disable_cache": true
+      },
+      {
+        "rule_set": [
+          "geosite-category-ads-all"
+        ],
+        "action": "reject",
+        "disable_cache": true
+      },
+      {
+        "rule_set": [
+          "geosite-category-games@cn",
+          "geosite-apple@cn",
+          "geosite-microsoft@cn",
+          "geosite-googlefcm",
+          "geosite-geolocation-cn"
+        ],
+        "domain_suffix": [
+          "cm.steampowered.com",
+          "steamserver.net"
+        ],
+        "action": "route",
+        "server": "Local-DNS"
+      },
+      {
+        "rule_set": [
+          "geosite-geolocation-!cn"
+        ],
+        "action": "route",
+        "server": "fakeip"
+      },
+      {
         "type": "logical",
         "mode": "and",
         "rules": [
           {
-            "clash_mode": "AllowAds",
+            "rule_set": "geosite-geolocation-!cn",
             "invert": true
           },
           {
-            "rule_set": "AWAvenue-Ads"
+            "rule_set": "geoip-cn"
           }
         ],
-        "action": "reject"
-      },
-      {
-        "rule_set": [
-          "category-games@cn",
-          "apple@cn",
-          "microsoft@cn",
-          "googlefcm",
-          "cn"
-        ],
-        "domain_suffix": [
-          "linux.do",
-          "controlplane.tailscale.com",
-          "log.tailscale.io",
-          "zhishimao.com"
-        ],
-        "action": "route",
-        "server": "Domestic"
+        "server": "Local-DNS"
       },
       {
         "query_type": [
@@ -93,44 +108,81 @@
           "AAAA"
         ],
         "action": "route",
-        "server": "remote"
+        "server": "fakeip"
       }
     ],
     "strategy": "prefer_ipv4",
     "independent_cache": true,
-    "reverse_mapping": true
+    "reverse_mapping": true,
+    "final": "Local-DNS"
   },
   "inbounds": [
     {
+      "type": "vless",
+      "tag": "vless-in",
+      "listen": "0.0.0.0",
+      "listen_port": 45678,
+      "users": [
+        {
+          "uuid": "**********************",
+          "flow": "xtls-rprx-vision"
+        }
+      ],
+      "tls": {
+        "enabled": true,
+        "server_name": "**********************",
+        "certificate_path": "**********************/fullchain.cer",
+        "key_path": "**********************/verashira.fun.key"
+      }
+    },
+    {
       "type": "tun",
       "tag": "tun-in",
-      "interface_name": "tun0",
       "address": [
         "172.18.0.1/30",
         "fdfe:dcba:9876::1/126"
       ],
       "stack": "mixed",
+      "strict_route": true,
       "auto_route": true,
-      "auto_redirect": true
+      "auto_redirect": true,
+      "interface_name": "tun1",
+      "route_exclude_address": [
+        "192.168.0.0/16",
+        "10.0.0.0/8",
+        "172.16.0.0/12",
+        "fc00::/7"
+      ],
+      "route_exclude_address_set": [
+        "geoip-cn"
+      ]
     }
   ],
   "providers": [
     {
-      "tag": "魔戒",
+      "tag": "精灵学院",
       "type": "remote",
-      "url": "",
+      "url": "https://subscription.riolu.link/RioLU/system/api/v1/client/subscribe?token=**********************",
       "update_interval": "24h",
-      "download_detour": "Proxy",
+      "user_agent": "clash.meta/alpha-5585304",
       "health_check": {
         "enabled": true
       }
     },
     {
-      "tag": "skyhope",
+      "tag": "魔戒",
       "type": "remote",
-      "url": "",
+      "url": "https://mojie.best/api/v1/client/subscribe?token=**********************",
       "update_interval": "24h",
-      "download_detour": "Proxy",
+      "health_check": {
+        "enabled": true
+      }
+    },
+    {
+      "tag": "白嫖机场",
+      "type": "remote",
+      "url": "https://dy11.baipiaoyes.com/api/v1/client/subscribe?token=**********************",
+      "update_interval": "24h",
       "health_check": {
         "enabled": true
       }
@@ -142,65 +194,124 @@
       "tag": "Direct"
     },
     {
-      "type": "selector",
-      "tag": "Proxy",
-      "outbounds": [
-        "Direct",
-        "skyhope",
-        "魔戒"
-      ],
-      "interrupt_exist_connections": true
+      "type": "direct",
+      "tag": "Direct-Easytier",
+      "bind_interface": "tun0"
+    },
+    {
+      "type": "direct",
+      "tag": "Direct-br-lan",
+      "bind_interface": "br-lan"
+    },
+    {
+      "flow": "xtls-rprx-vision",
+      "server": "**********************",
+      "server_port": 443,
+      "tag": "vless-reality-AI",
+      "tls": {
+        "enabled": true,
+        "reality": {
+          "enabled": true,
+          "public_key": "**********************",
+          "short_id": "**********************"
+        },
+        "server_name": "**********************",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      },
+      "transport": {},
+      "type": "vless",
+      "uuid": "**********************"
+    },
+    {
+      "congestion_control": "bbr",
+      "password": "**********************",
+      "server": "**********************",
+      "server_port": 443,
+      "tag": "tuic-443-AI",
+      "tls": {
+        "insecure": true,
+        "alpn": [
+          "h3",
+          "h2",
+          "http/1.1"
+        ],
+        "certificate": [
+          "-----BEGIN CERTIFICATE-----",
+          "**********************",
+          "-----END CERTIFICATE-----"
+        ],
+        "enabled": true,
+        "server_name": "**********************"
+      },
+      "type": "tuic",
+      "uuid": "**********************"
     },
     {
       "type": "selector",
-      "tag": "Game",
+      "tag": "🚀 节点选择",
       "outbounds": [
-        "Direct",
-        "Proxy"
+        "vless-reality-AI",
+        "tuic-443-AI",
+        "🧚‍♀️ 精灵学院",
+        "✈️ 白嫖机场",
+        "💍 魔戒",
+        "Direct"
       ],
-      "default": "Direct",
-      "use_all_providers": true
+      "interrupt_exist_connections": true,
+      "default": "🧚‍♀️ 精灵学院"
     },
     {
       "type": "selector",
-      "tag": "skyhope",
+      "tag": "🧚‍♀️ 精灵学院",
       "providers": [
-        "skyhope"
+        "精灵学院"
       ]
     },
     {
       "type": "selector",
-      "tag": "魔戒",
+      "tag": "✈️ 白嫖机场",
+      "providers": [
+        "白嫖机场"
+      ]
+    },
+    {
+      "type": "selector",
+      "tag": "💍 魔戒",
       "providers": [
         "魔戒"
       ]
     },
     {
-      "type": "selector",
-      "tag": "AI",
-      "use_all_providers": true
-    },
-    {
-      "type": "selector",
-      "tag": "galaxyappstore",
-      "outbounds": [
-        "Direct",
-        "Proxy"
+      "type": "urltest",
+      "tag": "🤖 AI",
+      "providers": [
+        "精灵学院"
       ],
-      "default": "Direct"
+      "outbounds": [
+        "vless-reality-AI",
+        "tuic-443-AI"
+      ],
+      "include": "新|美|台"
     },
     {
       "type": "selector",
-      "tag": "ehentai",
+      "tag": "📒 eh",
       "use_all_providers": true,
+      "outbounds": [
+        "vless-reality-AI",
+        "tuic-443-AI"
+      ],
       "include": "美|英|法|德|加拿|瑞|荷|意"
     },
     {
       "type": "selector",
-      "tag": "Domestic",
+      "tag": "🎯 全球直连",
       "outbounds": [
         "Direct",
-        "Proxy"
+        "🚀 节点选择"
       ],
       "default": "Direct"
     }
@@ -208,7 +319,19 @@
   "route": {
     "rules": [
       {
+        "network": "icmp",
+        "action": "bypass"
+      },
+      {
+        "port": 853,
+        "action": "reject"
+      },
+      {
         "action": "sniff"
+      },
+      {
+        "protocol": "stun",
+        "action": "reject"
       },
       {
         "type": "logical",
@@ -224,204 +347,165 @@
         "action": "hijack-dns"
       },
       {
-        "protocol": "bittorrent",
+        "protocol": [
+          "bittorrent",
+          "ntp"
+        ],
+        "action": "route",
         "outbound": "Direct"
       },
       {
-        "clash_mode": "Direct",
-        "action": "route",
-        "outbound": "direct"
-      },
-      {
-        "type": "logical",
-        "mode": "and",
-        "rules": [
-          {
-            "clash_mode": "AllowAds",
-            "invert": true
-          },
-          {
-            "rule_set": "AWAvenue-Ads"
-          }
+        "rule_set": [
+          "geosite-category-ads-all"
         ],
         "action": "reject"
       },
       {
         "rule_set": [
-          "category-games@cn",
-          "xbox",
-          "apple@cn",
-          "microsoft@cn",
-          "googlefcm"
+          "geosite-category-games@cn",
+          "geosite-apple@cn",
+          "geosite-microsoft@cn",
+          "geosite-googlefcm",
+          "geosite-geolocation-cn",
+          "steam_cn"
         ],
         "domain_suffix": [
-          "linux.do",
-          "controlplane.tailscale.com",
-          "log.tailscale.io"
+          "verashira.fun"
         ],
         "action": "route",
-        "outbound": "Domestic"
-      },
-      {
-        "rule_set": "xbox",
-        "action": "route",
-        "outbound": "Game"
+        "outbound": "🎯 全球直连"
       },
       {
         "rule_set": [
-          "openai",
-          "anthropic",
-          "gemini"
+          "geosite-openai",
+          "geosite-anthropic",
+          "geosite-google-gemini"
         ],
         "action": "route",
-        "outbound": "AI"
-      },
-      {
-        "domain_suffix": [
-          "galaxyappstore.com"
-        ],
-        "action": "route",
-        "outbound": "galaxyappstore"
+        "outbound": "🤖 AI"
       },
       {
         "rule_set": [
-          "ehentai"
+          "geosite-ehentai"
         ],
         "action": "route",
-        "outbound": "ehentai"
+        "outbound": "📒 eh"
       },
       {
-        "domain_suffix": [
-          "bulianglin.com",
-          "google.cn",
-          "teamspeak.com"
-        ],
         "rule_set": [
-          "cnbeta"
+          "geosite-geolocation-!cn"
         ],
         "action": "route",
-        "outbound": "Proxy"
+        "outbound": "🚀 节点选择"
       },
       {
-        "type": "logical",
-        "mode": "or",
-        "rules": [
-          {
-            "rule_set": "cnip"
-          },
-          {
-            "rule_set": "cn"
-          }
+        "rule_set": "geoip-cn",
+        "outbound": "🎯 全球直连"
+      },
+      {
+        "ip_cidr": [
+          "10.0.0.0/8",
+          "192.168.6.0/24",
+          "192.168.50.1/32"
         ],
         "action": "route",
-        "outbound": "Domestic"
+        "outbound": "Direct-Easytier"
+      },
+      {
+        "ip_cidr": [
+          "192.168.31.0/24"
+        ],
+        "action": "route",
+        "outbound": "Direct-br-lan"
       },
       {
         "ip_is_private": true,
+        "action": "route",
         "outbound": "Direct"
       }
     ],
+    "auto_detect_interface": true,
+    "default_domain_resolver": "Local-DNS",
+    "final": "🚀 节点选择",
     "rule_set": [
       {
-        "tag": "AWAvenue-Ads",
         "type": "remote",
-        "url": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Singbox.srs",
-        "download_detour": "Proxy",
-        "update_interval": "24h"
-      },
-      {
-        "tag": "googlefcm",
-        "type": "remote",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/googlefcm.srs",
-        "download_detour": "Proxy",
-        "update_interval": "24h"
+        "tag": "steam_cn",
+        "format": "source",
+        "url": "https://fastly.jsdelivr.net/gh/HorizenX1/sub@main/Sing-Box/rule-set/steam_cn.json"
       },
       {
         "type": "remote",
-        "tag": "geolocation-!cn",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/geolocation-!cn.srs",
-        "download_detour": "Proxy",
-        "update_interval": "24h"
+        "tag": "geosite-category-games@cn",
+        "format": "binary",
+        "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-category-games@cn.srs"
       },
       {
         "type": "remote",
-        "tag": "cnbeta",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/cnbeta.srs",
-        "download_detour": "Proxy",
-        "update_interval": "24h"
+        "tag": "geosite-apple@cn",
+        "format": "binary",
+        "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-apple@cn.srs"
       },
       {
         "type": "remote",
-        "tag": "openai",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/openai.srs",
-        "download_detour": "Proxy",
-        "update_interval": "24h"
+        "tag": "geosite-category-ads-all",
+        "format": "binary",
+        "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-category-ads-all.srs"
       },
       {
         "type": "remote",
-        "tag": "gemini",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/google-gemini.srs",
-        "download_detour": "Proxy",
-        "update_interval": "24h"
+        "tag": "geosite-googlefcm",
+        "format": "binary",
+        "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-googlefcm.srs"
       },
       {
         "type": "remote",
-        "tag": "ehentai",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/ehentai.srs",
-        "download_detour": "Proxy",
-        "update_interval": "24h"
+        "tag": "geosite-geolocation-!cn",
+        "format": "binary",
+        "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-geolocation-!cn.srs"
       },
       {
         "type": "remote",
-        "tag": "microsoft@cn",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/microsoft@cn.srs",
-        "download_detour": "Proxy",
-        "update_interval": "24h"
+        "tag": "geosite-openai",
+        "format": "binary",
+        "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-openai.srs"
       },
       {
         "type": "remote",
-        "tag": "apple@cn",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/apple@cn.srs",
-        "download_detour": "Proxy",
-        "update_interval": "24h"
+        "tag": "geosite-google-gemini",
+        "format": "binary",
+        "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-google-gemini.srs"
       },
       {
         "type": "remote",
-        "tag": "category-games@cn",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/category-games@cn.srs",
-        "download_detour": "Proxy",
-        "update_interval": "24h"
+        "tag": "geosite-ehentai",
+        "format": "binary",
+        "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-ehentai.srs"
       },
       {
         "type": "remote",
-        "tag": "cn",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/cn.srs",
-        "download_detour": "Proxy",
-        "update_interval": "24h"
+        "tag": "geosite-microsoft@cn",
+        "format": "binary",
+        "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-microsoft@cn.srs"
       },
       {
         "type": "remote",
-        "tag": "xbox",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/xbox.srs",
-        "download_detour": "Proxy",
-        "update_interval": "24h"
+        "tag": "geosite-geolocation-cn",
+        "format": "binary",
+        "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-geolocation-cn.srs"
       },
       {
         "type": "remote",
-        "tag": "anthropic",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/anthropic.srs",
-        "download_detour": "Proxy",
-        "update_interval": "24h"
+        "tag": "geosite-anthropic",
+        "format": "binary",
+        "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-anthropic.srs"
       },
       {
         "type": "remote",
-        "tag": "cnip",
-        "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geoip/cn.srs",
-        "download_detour": "Proxy",
-        "update_interval": "24h"
+        "tag": "geoip-cn",
+        "format": "binary",
+        "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geoip@rule-set/geoip-cn.srs"
       }
-    ],
-    "auto_detect_interface": true,
-    "final": "Proxy"
+    ]
   }
 }
