@@ -319,19 +319,11 @@
   "route": {
     "rules": [
       {
-        "network": "icmp",
-        "action": "bypass"
-      },
-      {
         "port": 853,
         "action": "reject"
       },
       {
         "action": "sniff"
-      },
-      {
-        "protocol": "stun",
-        "action": "reject"
       },
       {
         "type": "logical",
@@ -347,9 +339,21 @@
         "action": "hijack-dns"
       },
       {
-        "protocol": [
-          "bittorrent",
-          "ntp"
+        "type": "logical",
+        "mode": "or",
+        "rules": [
+          {
+            "protocol": [
+              "bittorrent",
+              "ntp"
+            ]
+          },
+          {
+            "port": 123
+          },
+          {
+            "network": "icmp"
+          }
         ],
         "action": "route",
         "outbound": "Direct"
